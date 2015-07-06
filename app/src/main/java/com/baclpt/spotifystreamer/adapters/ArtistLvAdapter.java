@@ -1,14 +1,11 @@
 package com.baclpt.spotifystreamer.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.baclpt.spotifystreamer.R;
@@ -61,12 +58,12 @@ public class ArtistLvAdapter extends ArrayAdapter<ArtistInfo> {
      * Cache View Holder
      */
     protected class ViewHolder {
-        public ImageView mThumbnail;
-        public TextView mName;
+        public final ImageView mThumbnail;
+        public final TextView mName;
 
         public ViewHolder(View view) {
             mThumbnail = (ImageView) view.findViewById(R.id.list_item_thumb_imageView);
-            mName = (TextView) view.findViewById(R.id.list_item_name_textView);;
+            mName = (TextView) view.findViewById(R.id.list_item_name_textView);
         }
     }
 

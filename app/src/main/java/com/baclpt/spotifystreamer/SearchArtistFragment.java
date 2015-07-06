@@ -1,18 +1,17 @@
 package com.baclpt.spotifystreamer;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baclpt.spotifystreamer.adapters.ArtistLvAdapter;
 import com.baclpt.spotifystreamer.data.ArtistInfo;
@@ -29,21 +28,27 @@ public class SearchArtistFragment extends BaseFragment {
     private static final String CURRENT_SEARCH_RESULTS_KEY = "current_search_results";
 
     private ArtistLvAdapter lvAdapter;
-    private ArrayList<ArtistInfo> artistInfos;
+    private ArrayList<ArtistInfo> artistInfoList;
     private ListView mListView;
 
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // if it is on a phone invoke parent method  BaseFrame.onStart() to bind to the service to receive callback updates (show/hide NowPLaying button)
+        // else do nothing, because TopTracksFragment will be doing this work.
+
+        isBindingToPlayerServiceEnabled = !useTwoPaneLayout;
+
         View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_SEARCH_RESULTS_KEY)) {
-            artistInfos = savedInstanceState.getParcelableArrayList(CURRENT_SEARCH_RESULTS_KEY);
+            artistInfoList = savedInstanceState.getParcelableArrayList(CURRENT_SEARCH_RESULTS_KEY);
         } else {
-            artistInfos = new ArrayList<ArtistInfo>();
+            artistInfoList = new ArrayList<>();
+
         }
 
-        lvAdapter = new ArtistLvAdapter(getActivity(), R.layout.list_item_artist, artistInfos);
+        lvAdapter = new ArtistLvAdapter(getActivity(), R.layout.list_item_artist, artistInfoList);
 
 
         // Get a reference to the ListView, and attach this adapter to it.
@@ -53,59 +58,106 @@ public class SearchArtistFragment extends BaseFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ArtistInfo selectedArtist = lvAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), TopTracksActivity.class);
-                intent.putExtra(TopTracksActivity.EXTRA_SPOTIFY_ID, selectedArtist.getSotifyId());
-                intent.putExtra(TopTracksActivity.EXTRA_ARTIST_Name, selectedArtist.getName());
-                startActivity(intent);
+
+                CallbackSearchArtist act = (CallbackSearchArtist) getActivity();
+                act.onArtistSelected(selectedArtist);
+
 
             }
         });
+        mListView.requestFocus();
 
-
-        EditText editText = (EditText) rootView.findViewById(R.id.query_editText);
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        SearchView searchView = (SearchView) rootView.findViewById(R.id.query_editText);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
+            public boolean onQueryTextSubmit(String query) {
+                doSearch(query);
+                return true;
+            }
 
-                if (actionId == EditorInfo.IME_ACTION_SEARCH
-                        || (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                        && event.getAction() != KeyEvent.ACTION_UP)/*fix to the event handler is being called twice */
-                        ) {
-                    doSearch(textView);
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    cleanSearchResults();
                     return true;
                 }
                 return false;
             }
         });
 
-
         return rootView;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (artistInfos != null) {
-            outState.putParcelableArrayList(CURRENT_SEARCH_RESULTS_KEY, artistInfos);
-        }
         super.onSaveInstanceState(outState);
+        if (artistInfoList != null) {
+            outState.putParcelableArrayList(CURRENT_SEARCH_RESULTS_KEY, artistInfoList);
+
+        }
+
     }
+
 
     public void doSearch() {
-        doSearch((TextView) getActivity().findViewById(R.id.query_editText));
+        doSearch(((SearchView) getActivity().findViewById(R.id.query_editText)).getQuery().toString());
     }
 
-    private void doSearch(TextView queryTextView) {
-        // starts executing the search on an asynctask
-        TaskSearchArtist task = new TaskSearchArtist(this, lvAdapter);
-        task.execute(queryTextView.getText().toString());
+    private void doSearch(String query) {
 
-        // scroll to top
-        mListView.smoothScrollToPosition(0);
+        // check if query is empty
+        if (!query.trim().isEmpty()) {
 
-        // this is a quick fix: to hide soft keyboard to show the results, otherwise would over lap the list view
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(queryTextView.getWindowToken(), 0);
+            // starts executing the search on an AsyncTask
+            TaskSearchArtist task = new TaskSearchArtist(this, lvAdapter);
+            task.execute(query);
+
+            // scroll to top
+            mListView.smoothScrollToPosition(0);
+            mListView.clearChoices();
+
+            cleanTopTracksResults();
+
+
+            // this is a quick fix: to hide soft keyboard to show the results, otherwise would over lap the list view
+            Utility.hideKeyboard(getActivity());
+        } else {
+            showMessage(getString(R.string.error_msg_empty_query));
+        }
+
     }
 
+    private void cleanSearchResults() {
+        mListView.clearChoices();
+        lvAdapter.clear();
+        if (useTwoPaneLayout)
+            cleanTopTracksResults();
+    }
 
+    private void cleanTopTracksResults() {
+        if (useTwoPaneLayout) {
+            CallbackSearchArtist act = (CallbackSearchArtist) getActivity();
+            act.onArtistSelected(null);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!artistInfoList.isEmpty()) {
+            mListView.requestFocus();
+        }
+    }
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface CallbackSearchArtist {
+        /**
+         * Callback for when an item has been selected.
+         */
+        void onArtistSelected(ArtistInfo selectedArtistInfo);
+    }
 }

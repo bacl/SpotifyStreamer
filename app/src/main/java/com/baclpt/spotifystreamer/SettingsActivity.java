@@ -3,8 +3,6 @@ package com.baclpt.spotifystreamer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.preference.PreferenceActivity;
 
 /**
  * Created by Bruno on 09-06-2015.

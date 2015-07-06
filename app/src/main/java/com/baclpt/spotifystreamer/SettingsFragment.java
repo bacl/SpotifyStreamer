@@ -1,10 +1,12 @@
 package com.baclpt.spotifystreamer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,20 +23,26 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
 
-        //
-        String defaultCountry = Locale.getDefault().getCountry();
-        if (defaultCountry.equals("")) {
-            defaultCountry = getString(R.string.settings_country_default);
-        }
 
         ListPreference countryList = (ListPreference) findPreference(getString(R.string.settings_country_key));
         populateCountryList(countryList);
 
         bindPreferenceSummaryToValue(findPreference(getString(R.string.settings_country_key)));
+
+        findPreference(getString(R.string.settings_notification_key)).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                Intent intentToService = new Intent(getActivity(), PlayerService.class);
+                intentToService.setAction(PlayerService.ACTION_NOTIFICATION_UPDATE);
+                getActivity().startService(intentToService);
+                return true;
+            }
+        });
     }
 
     /**
      * Populate the ListPreference with country names and corresponding two letter codes as defined by ISO 3166-1.
+     *
      * @param lp The ListPreference to populate
      */
     private void populateCountryList(ListPreference lp) {
@@ -42,8 +50,8 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         // get country list(2 letter code) from the OS library
         String[] countryCodes = Locale.getISOCountries();
 
-        // make an arraylist of the country name and its code
-        ArrayList<Country> list = new ArrayList<Country>(countryCodes.length);
+        // make an arrayList of the country name and its code
+        ArrayList<Country> list = new ArrayList<>(countryCodes.length);
         for (String code : countryCodes) {
             list.add(new Country(code, (new Locale("", code)).getDisplayCountry()));
         }
@@ -103,7 +111,7 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
     }
 
     /**
-     *  Auxiliary class to help sorting alphabetically the country name  (and retaining its 2 letter code)
+     * Auxiliary class to help sorting alphabetically the country name  (and retaining its 2 letter code)
      */
     public class Country implements Comparable<Country> {
         private String code;
@@ -132,8 +140,8 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         }
 
         @Override
-        public int compareTo(Country o) {
-            return this.label.compareTo(o.label);
+        public int compareTo(@NonNull Country country) {
+            return this.label.compareTo(country.label);
         }
     }
 }

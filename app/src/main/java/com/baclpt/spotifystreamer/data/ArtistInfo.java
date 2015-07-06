@@ -7,26 +7,31 @@ import android.os.Parcelable;
  * Created by Bruno on 04-06-2015.
  */
 public class ArtistInfo implements Parcelable {
-    private String sotifyId;
+    private String spotifyId;
     private String name;
     private String imageURL;
 
     public ArtistInfo() {
     }
 
+    public ArtistInfo(String spotifyId, String name, String imageURL) {
+        this.spotifyId = spotifyId;
+        this.name=name;
+        this.imageURL=imageURL;
+    }
 
     public ArtistInfo(Parcel parcel) {
-        sotifyId = parcel.readString();
+        spotifyId = parcel.readString();
         name = parcel.readString();
         imageURL = parcel.readString();
     }
 
-    public String getSotifyId() {
-        return sotifyId;
+    public String getSpotifyId() {
+        return spotifyId;
     }
 
-    public void setSotifyId(String sotifyId) {
-        this.sotifyId = sotifyId;
+    public void setSpotifyId(String spotifyId) {
+        this.spotifyId = spotifyId;
     }
 
     public String getName() {
@@ -47,7 +52,7 @@ public class ArtistInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(sotifyId);
+        dest.writeString(spotifyId);
         dest.writeString(name);
         dest.writeString(imageURL);
     }

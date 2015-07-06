@@ -1,15 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-
-
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <PreferenceCategory android:title="@string/settings_general_title">
-         <ListPreference
-            android:key="@string/settings_country_key"
-            android:title="@string/settings_country_title"
+
+        <ListPreference
             android:dialogTitle="@string/settings_country_dialogTitle"
-            />
+            android:key="@string/settings_country_key"
+            android:title="@string/settings_country_title" />
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/settings_player_title">
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_auto_play_default"
+            android:key="@string/settings_auto_play_key"
+            android:summaryOff="@string/settings_auto_play_off_msg"
+            android:summaryOn="@string/settings_auto_play_on_msg"
+            android:title="@string/settings_auto_play_title" />
+
+        <SwitchPreference
+            android:defaultValue="@string/settings_notification_default"
+            android:key="@string/settings_notification_key"
+            android:summaryOff="@string/settings_notification_off_msg"
+            android:summaryOn="@string/settings_notification_on_msg"
+            android:title="@string/settings_notification_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

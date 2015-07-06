@@ -19,16 +19,17 @@ import retrofit.RetrofitError;
 
 
 /**
- * Asynctask to search spotify for an artist name
+ * AsyncTask to search spotify for an artist name
  * Created by Bruno on 04-06-2015.
  */
 public class TaskFetchTopTracks extends BaseAsyncTask<TrackInfo> {
 
+    private static final String EXTERNAL_URL_KEY = "spotify";
     private final int minimumThumbSmallWidth = 200; // minimum width for small thumbnail
     private final int minimumThumbLargeWidth = 640; // minimum  width for large thumbnail
 
-    private String sotifyArtistID;
-    private String sotifyArtistName;
+    private String spotifyArtistID;
+    private String spotifyArtistName;
 
 
     public TaskFetchTopTracks(BaseFragment baseFragment, ArrayAdapter<TrackInfo> lvAdapter) {
@@ -40,8 +41,8 @@ public class TaskFetchTopTracks extends BaseAsyncTask<TrackInfo> {
     protected ArrayList<TrackInfo> doSearch(SpotifyService spotify, String... params) throws RetrofitError {
         // check if has params
         if (params.length == 0) return null;
-        sotifyArtistID = params[0];
-        sotifyArtistName = params[1];
+        spotifyArtistID = params[0];
+        spotifyArtistName = params[1];
 
 
         // query configuration
@@ -49,23 +50,25 @@ public class TaskFetchTopTracks extends BaseAsyncTask<TrackInfo> {
         config.put(SpotifyService.COUNTRY, Utility.getPreferredCountry(mFragment.getActivity()));
 
         // send query  to spotify service
-        Tracks results = spotify.getArtistTopTrack(sotifyArtistID, config);
+        Tracks results = spotify.getArtistTopTrack(spotifyArtistID, config);
 
         // array list to store the processed results
-        ArrayList<TrackInfo> resultList = new ArrayList<TrackInfo>();
+        ArrayList<TrackInfo> resultList = new ArrayList<>();
 
         // for each track found extract need info and add to resultList ArrayList
-        Iterator<Track> foundTrackIterator = results.tracks.iterator();
-        while (foundTrackIterator.hasNext()) {
-            Track t = foundTrackIterator.next();
-            TrackInfo trackInfo = new TrackInfo(sotifyArtistID);
+        for (Track resultTrack : results.tracks) {
+            TrackInfo trackInfo = new TrackInfo(spotifyArtistID, spotifyArtistName);
 
-            trackInfo.setAlbumName(t.album.name);
-            trackInfo.setTrackName(t.name);
-            trackInfo.setPreviewURL(t.preview_url);
+            trackInfo.setAlbumName(resultTrack.album.name);
+            trackInfo.setTrackName(resultTrack.name);
+            trackInfo.setPreviewURL(resultTrack.preview_url);
 
-            if (t.album.images.size() > 0) {
-                Iterator<Image> imageIterator = t.album.images.iterator();
+            if (resultTrack.external_urls.containsKey(EXTERNAL_URL_KEY)) {
+                trackInfo.setExternalURL(resultTrack.external_urls.get(EXTERNAL_URL_KEY));
+            }
+
+            if (!resultTrack.album.images.isEmpty()) {
+                Iterator<Image> imageIterator = resultTrack.album.images.iterator();
 
 
                 int largeImgWidthFound = Integer.MAX_VALUE;
@@ -111,7 +114,7 @@ public class TaskFetchTopTracks extends BaseAsyncTask<TrackInfo> {
                     mFragment.showMessage(errorMSG);
                 } else {
                     // no tracks found
-                    mFragment.showMessage(mFragment.getActivity().getString(R.string.error_msg_no_results_top_track, sotifyArtistName));
+                    mFragment.showMessage(mFragment.getActivity().getString(R.string.error_msg_no_results_top_track, spotifyArtistName));
                 }
             } else {
                 // everything is ok, show the list of results

@@ -19,13 +19,13 @@ import retrofit.RetrofitError;
 
 
 /**
- * Asynctask to search spotify for an artist name
+ * AsyncTask to search spotify for an artist name
  * Created by Bruno on 04-06-2015.
  */
 public class TaskSearchArtist extends BaseAsyncTask<ArtistInfo> {
 
     private final int minimumThumbWidth = 200; // minimum thumbnail width
-    private final int numberOfResutlsPerQuery = 20;
+    private final int numberOfResultsPerQuery = 20;
 
     private String artistNameQuery;
 
@@ -49,7 +49,7 @@ public class TaskSearchArtist extends BaseAsyncTask<ArtistInfo> {
 
         // TODO: add the remaining results
 //        config.put(SpotifyService.OFFSET, 0);
-        config.put(SpotifyService.LIMIT, numberOfResutlsPerQuery);
+//        config.put(SpotifyService.LIMIT, numberOfResultsPerQuery);
 
 
 
@@ -57,21 +57,19 @@ public class TaskSearchArtist extends BaseAsyncTask<ArtistInfo> {
         ArtistsPager spotifyResponse = spotify.searchArtists(artistNameQuery, config);
 
         // array list to store the processed results
-        ArrayList<ArtistInfo> resultList = new ArrayList<ArtistInfo>();
+        ArrayList<ArtistInfo> resultList = new ArrayList<>();
 
         // for each artist found extract need info and add to resultList ArrayList
-        Iterator<Artist> foundArtistsIterator = spotifyResponse.artists.items.iterator();
-        while (foundArtistsIterator.hasNext()) {
-            Artist artist = foundArtistsIterator.next();
+        for (Artist resultArtist : spotifyResponse.artists.items) {
             ArtistInfo artistInfo = new ArtistInfo();
 
-            artistInfo.setName(artist.name);
-            artistInfo.setSotifyId(artist.id);
+            artistInfo.setName(resultArtist.name);
+            artistInfo.setSpotifyId(resultArtist.id);
 
-            if (artist.images.size() > 0) {
-                Iterator<Image> imageIterator = artist.images.iterator();
+            if (!resultArtist.images.isEmpty()) {
+                Iterator<Image> imageIterator = resultArtist.images.iterator();
 
-                int smallImgWidthFound = 1640;// a big mumber
+                int smallImgWidthFound = 1640;// a big number
 
                 while (imageIterator.hasNext()) {
                     Image image = imageIterator.next();

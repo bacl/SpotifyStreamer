@@ -19,7 +19,8 @@ import java.util.ArrayList;
  *
  * Created by Bruno on 04-06-2015.
  */
-public class TopTrackLvAdapter extends ArrayAdapter<TrackInfo> {
+public class TopTrackLvAdapter extends ArrayAdapter<TrackInfo>  {
+
 
 
     public TopTrackLvAdapter(Context context, int resource, ArrayList<TrackInfo> artists) {
@@ -60,9 +61,9 @@ public class TopTrackLvAdapter extends ArrayAdapter<TrackInfo> {
      * Cache View Holder
      */
     protected class ViewHolder {
-        public ImageView mThumbnail;
-        public TextView mTrackName;
-        public TextView mAlbumName;
+        public final ImageView mThumbnail;
+        public final TextView mTrackName;
+        public final TextView mAlbumName;
 
         public ViewHolder(View view) {
             mThumbnail = (ImageView) view.findViewById(R.id.list_item_abum_thumb_imageView);

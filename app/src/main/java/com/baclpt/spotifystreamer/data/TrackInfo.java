@@ -7,32 +7,44 @@ import android.os.Parcelable;
  * Created by Bruno on 04-06-2015.
  */
 public class TrackInfo implements Parcelable {
-    private String sotifyArtistID;
+    private String spotifyArtistID;
+    private String spotifyArtistName;
     private String trackName;
     private String albumName;
     private String albumArtLargeURL;
     private String albumArtSmallURL;
     private String previewURL;
+    private String externalURL;
 
-    public TrackInfo(String sotifyArtistID) {
-        this.sotifyArtistID = sotifyArtistID;
+    public TrackInfo(String spotifyArtistID, String spotifyArtistName) {
+        this.spotifyArtistID = spotifyArtistID;
+        this.spotifyArtistName = spotifyArtistName;
     }
 
     public TrackInfo(Parcel in) {
-        sotifyArtistID = in.readString();
+        spotifyArtistID = in.readString();
+        spotifyArtistName = in.readString();
         trackName = in.readString();
         albumName = in.readString();
         albumArtLargeURL = in.readString();
         albumArtSmallURL = in.readString();
         previewURL = in.readString();
+        externalURL = in.readString();
     }
 
-    public String getSotifyArtistID() {
-        return sotifyArtistID;
+    public String getSpotifyArtistName() {
+        return spotifyArtistName;
     }
 
-    public void setSotifyArtistID(String sotifyArtistID) {
-        this.sotifyArtistID = sotifyArtistID;
+    public void setSpotifyArtistName(String sotifyArtistName) {
+        this.spotifyArtistName = sotifyArtistName;
+    }
+    public String getSpotifyArtistID() {
+        return spotifyArtistID;
+    }
+
+    public void setSpotifyArtistID(String spotifyArtistID) {
+        this.spotifyArtistID = spotifyArtistID;
     }
 
     public String getTrackName() {
@@ -74,15 +86,23 @@ public class TrackInfo implements Parcelable {
     public void setPreviewURL(String previewURL) {
         this.previewURL = previewURL;
     }
+    public void setExternalURL(String externalURL) {
+        this.externalURL = externalURL;
+    }
+    public String getExternalURL() {
+        return externalURL;
+    }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(sotifyArtistID);
+        dest.writeString(spotifyArtistID);
+        dest.writeString(spotifyArtistName);
         dest.writeString(trackName);
         dest.writeString(albumName);
         dest.writeString(albumArtLargeURL);
         dest.writeString(albumArtSmallURL);
         dest.writeString(previewURL);
+        dest.writeString(externalURL);
     }
 
     @Override
@@ -100,4 +120,6 @@ public class TrackInfo implements Parcelable {
             return new TrackInfo[size];
         }
     };
+
+
 }

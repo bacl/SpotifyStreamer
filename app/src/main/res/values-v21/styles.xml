@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <resources>
-        <!-- Settings activity theme. -->
-        <style name="SettingsTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
-            <item name="android:colorPrimary">@color/green </item>
-            <item name="android:colorPrimaryDark">@color/dark_green</item>
-        </style>
+<resources>
 
-    </resources>
+    <!-- Settings activity theme. -->
+    <style name="SettingsTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/green</item>
+        <item name="android:colorPrimaryDark">@color/dark_green</item>
+    </style>
+
+
+
+
+
+</resources>

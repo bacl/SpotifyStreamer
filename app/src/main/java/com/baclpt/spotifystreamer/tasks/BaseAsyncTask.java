@@ -67,7 +67,7 @@ public class BaseAsyncTask<T> extends AsyncTask<String, Void, ArrayList<T>> {
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
 
-        ArrayList<T> resultList = new ArrayList<T>();
+        ArrayList<T> resultList;
 
         try {
             resultList = doSearch(spotify,params);

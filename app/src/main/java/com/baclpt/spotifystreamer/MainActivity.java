@@ -8,22 +8,35 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.baclpt.spotifystreamer.data.ArtistInfo;
+
 import java.util.Locale;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements SearchArtistFragment.CallbackSearchArtist {
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String TOP_TRACKS_FRAGMENT_TAG = "TTFTAG";
+
+
     private String mCountry;
+    private boolean mTwoPane;
+    private TopTracksActivityFragment fragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadPreferences();
 
+        mTwoPane = getResources().getBoolean(R.bool.large_layout);
+
+        if (!mTwoPane) getSupportActionBar().setElevation(0f);
+
+        loadPreferences();
     }
 
     /**
-     *  Load Preferences
+     * Load Preferences
      */
     private void loadPreferences() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -31,14 +44,14 @@ public class MainActivity extends ActionBarActivity {
 
         // if doesn't exist sets the current country to device Locale
         // (appends on first time the user runs the app)
-        if (country == null || country.length() == 0) {
+        if (country == null || country.isEmpty()) {
             country = Locale.getDefault().getCountry();
             if (country.equals("")) {
                 country = getString(R.string.settings_country_default);
             }
             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
             editor.putString(getString(R.string.settings_country_key), country);
-            editor.commit();
+            editor.apply();
         }
         mCountry = country;
     }
@@ -50,8 +63,8 @@ public class MainActivity extends ActionBarActivity {
         // update the search results if the preferred country changed
         String country = Utility.getPreferredCountry(this);
         if (country != null && !country.equals(mCountry)) {
-            SearchArtistFragment frag = (SearchArtistFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_artist_container);
-            if ( frag != null) {
+            SearchArtistFragment frag = (SearchArtistFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_search_container);
+            if (frag != null) {
                 frag.doSearch();
             }
             mCountry = country;
@@ -79,5 +92,44 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        stopService(new Intent(this, PlayerService.class));
+        super.onBackPressed();
+    }
+
+
+    @Override
+    public void onArtistSelected(ArtistInfo selectedArtistInfo) {
+
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            if (fragment == null) {
+                fragment = new TopTracksActivityFragment();
+                fragment.setArtistInfo(selectedArtistInfo);
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_top_tracks_container, fragment, TOP_TRACKS_FRAGMENT_TAG)
+                        .commit();
+            } else {
+                fragment.setArtistInfo(selectedArtistInfo);
+                fragment.fetchArtistTracks();
+            }
+
+
+        } else {
+
+            Intent intent = new Intent(this, TopTracksActivity.class);
+            Bundle bundleArtistInfo = new Bundle();
+            bundleArtistInfo.putParcelable(TopTracksActivity.EXTRA_SPOTIFY_ARTIST_INFO, selectedArtistInfo);
+            intent.putExtra(TopTracksActivity.EXTRA_SPOTIFY_ARTIST_INFO, bundleArtistInfo);
+            startActivity(intent);
+
+        }
     }
 }
